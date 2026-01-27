@@ -2,13 +2,16 @@
   "name": "react-smart-form-errors",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.jsx",
+  "peerDependencies": {
+    "react": ">=16"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "react": "^19.2.4"
