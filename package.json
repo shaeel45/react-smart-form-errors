@@ -9,6 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "files": ["dist", "README.md"],
   "keywords": [],
   "author": "",
   "license": "MIT",
