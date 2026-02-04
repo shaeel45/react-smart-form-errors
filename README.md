@@ -19,10 +19,10 @@ npm install react-smart-form-errors
 ## Quick Start
 
 ```javascript
-import { useFormErrors } from 'react-smart-form-errors';
+import { useFormErrorTranslator } from 'react-smart-form-errors';
 
 function MyForm() {
-    const { errors, validate, clearErrors } = useFormErrors();
+    const { errors, validate, clearErrors } = useFormErrorTranslator();
 
     const handleSubmit = async (formData) => {
         if (validate(formData)) {
