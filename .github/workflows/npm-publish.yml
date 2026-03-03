@@ -1,0 +1,39 @@
+name: Publish Package
+
+on:
+  push:
+    branches:
+      - main # Triggers on push to the main branch
+  release:
+    types: [created] # Alternatively, trigger on new GitHub releases
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Needed for npm provenance
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use your desired Node.js version
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Install dependencies and build (if applicable)
+        run: npm install
+
+      - name: Run tests (if applicable)
+        run: npm test
+
+      - name: Publish package
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }} # Use the secret you created
+          NPM_CONFIG_PROVENANCE: true # Optional, adds verifiable provenance data
