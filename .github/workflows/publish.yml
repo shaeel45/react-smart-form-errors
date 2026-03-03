@@ -1,25 +1,39 @@
-name: Publish to npm
+name: Publish Package
 
 on:
   push:
-    tags:
-      - 'v*'
-
-permissions:
-  id-token: write  # Required for OIDC
-  contents: read
+    branches:
+      - main # Triggers on push to the main branch
+  release:
+    types: [created] # Alternatively, trigger on new GitHub releases
 
 jobs:
-  publish:
+  build-and-publish:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    permissions:
+      contents: read
+      id-token: write # Needed for npm provenance
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
-      - run: npm ci
-      - run: npm run build --if-present
-      - run: npm test
-      - run: npm publish
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use your desired Node.js version
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Install dependencies and build (if applicable)
+        run: npm install
+
+      - name: Run tests (if applicable)
+        run: npm test
+
+      - name: Publish package
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }} # Use the secret you created
+          NPM_CONFIG_PROVENANCE: true # Optional, adds verifiable provenance data
