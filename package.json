@@ -1,6 +1,6 @@
 {
   "name": "react-smart-form-errors",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "dist/react-smart-form-errors.cjs",
   "module": "dist/react-smart-form-errors.esm.js",
