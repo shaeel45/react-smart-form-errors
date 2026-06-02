@@ -1,6 +1,6 @@
 {
   "name": "react-smart-form-errors",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A lightweight, production-ready form validation library for React with 15+ built-in validators and zero dependencies",
   "main": "dist/react-smart-form-errors.cjs",
   "module": "dist/react-smart-form-errors.esm.js",
