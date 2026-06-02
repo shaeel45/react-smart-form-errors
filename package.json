@@ -1,6 +1,6 @@
 {
   "name": "react-smart-form-errors",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -16,7 +16,9 @@
   "author": "",
   "license": "MIT",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "react": "^19.2.4"
   },
