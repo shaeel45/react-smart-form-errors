@@ -20,9 +20,9 @@
     "dist"
   ],
   "dependencies": {
-    "react": "^19.2.4"
+    "react": ">=16"
   },
   "devDependencies": {
-    "microbundle": "^0.15.0"
+    "microbundle": "^0.15.1"
   }
 }
