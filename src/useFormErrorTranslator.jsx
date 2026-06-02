@@ -1,4 +1,4 @@
-import { defaultMessages } from './messages';
+import defaultMessages from './messages/defaultMessages';
 
 export function useFormErrorTranslator(errors, options = {}) {
   const messages = { ...defaultMessages, ...options.messages };

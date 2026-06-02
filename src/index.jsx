@@ -1,1 +1,1 @@
-export { useFormErrorTranslator } from './useFormErrorTranslator';
+export * from './index';
