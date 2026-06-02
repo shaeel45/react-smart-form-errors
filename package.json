@@ -2,8 +2,14 @@
   "name": "react-smart-form-errors",
   "version": "1.0.2",
   "description": "",
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.esm.js",
+  "main": "dist/react-smart-form-errors.cjs",
+  "module": "dist/react-smart-form-errors.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/react-smart-form-errors.esm.js",
+      "require": "./dist/react-smart-form-errors.cjs"
+    }
+  },
   "peerDependencies": {
     "react": ">=16"
   },
