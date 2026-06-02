@@ -16,7 +16,14 @@ export default function useSmartForm({
   rules = {},
   messages = defaultMessages,
 } = {}) {
-  const [values, setValues] = useState(initialValues);
+  // Ensure initialValues is a plain object
+  const cleanInitialValues = useMemo(() => {
+    return typeof initialValues === 'object' && initialValues !== null
+      ? { ...initialValues }
+      : {};
+  }, [initialValues]);
+
+  const [values, setValues] = useState(cleanInitialValues);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
@@ -31,7 +38,7 @@ export default function useSmartForm({
   const validateField = useCallback(
     (fieldName, fieldValue) => {
       const fieldRules = rules[fieldName];
-      
+
       if (!fieldRules) return null;
 
       // Handle array of rules
@@ -65,7 +72,7 @@ export default function useSmartForm({
     }
 
     // Object rule: custom configuration
-    if (typeof rule === 'object') {
+    if (typeof rule === 'object' && rule !== null) {
       const { rule: ruleName, ...options } = rule;
       const validator = validators[ruleName];
       if (validator) {
@@ -83,18 +90,21 @@ export default function useSmartForm({
   };
 
   /**
-   * Validates all fields
+   * Validates all fields and sets touched to true for all fields with rules
    */
   const validateForm = useCallback(() => {
     const newErrors = {};
-    
+    const newTouched = {};
+
     Object.keys(rules).forEach((fieldName) => {
+      newTouched[fieldName] = true;
       const error = validateField(fieldName, values[fieldName]);
       if (error) {
         newErrors[fieldName] = error;
       }
     });
 
+    setTouched(newTouched);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [rules, values, validateField]);
@@ -105,61 +115,103 @@ export default function useSmartForm({
   const getFieldError = useCallback(
     (fieldName) => {
       const error = errors[fieldName];
-      if (!error) return null;
+      if (!error) return '';
       return getErrorMessage(error, fieldName, mergedMessages);
     },
     [errors, mergedMessages]
   );
 
   /**
-   * Handle input change
+   * Handle input change - supports both React events and manual calls
    */
   const handleChange = useCallback(
-    (e) => {
-      const { name, value, type, checked } = e.target;
-      const newValue = type === 'checkbox' ? checked : value;
-      
+    (nameOrEvent, manualValue) => {
+      let fieldName;
+      let newValue;
+
+      // Support both React events and manual usage: handleChange("fieldName", value)
+      if (typeof nameOrEvent === 'string') {
+        fieldName = nameOrEvent;
+        newValue = manualValue;
+      } else if (nameOrEvent && typeof nameOrEvent === 'object') {
+        // React event
+        const { target } = nameOrEvent;
+        fieldName = target.name;
+        const { type, checked, value } = target;
+        newValue = type === 'checkbox' ? checked : value;
+      } else {
+        return;
+      }
+
       setValues((prev) => ({
         ...prev,
-        [name]: newValue,
+        [fieldName]: newValue,
       }));
 
       // Validate on change if field has been touched
-      if (touched[name]) {
-        const error = validateField(name, newValue);
-        setErrors((prev) => ({
-          ...prev,
-          [name]: error || undefined,
-        }));
+      if (touched[fieldName]) {
+        const error = validateField(fieldName, newValue);
+        if (error) {
+          setErrors((prev) => ({
+            ...prev,
+            [fieldName]: error,
+          }));
+        } else {
+          // Remove error if validation passes
+          setErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[fieldName];
+            return newErrors;
+          });
+        }
       }
     },
     [touched, validateField]
   );
 
   /**
-   * Handle blur event
+   * Handle blur event - supports both React events and manual calls
    */
   const handleBlur = useCallback(
-    (e) => {
-      const { name } = e.target;
-      
+    (nameOrEvent) => {
+      let fieldName;
+
+      // Support both React events and manual usage: handleBlur("fieldName")
+      if (typeof nameOrEvent === 'string') {
+        fieldName = nameOrEvent;
+      } else if (nameOrEvent && typeof nameOrEvent === 'object') {
+        // React event
+        fieldName = nameOrEvent.target.name;
+      } else {
+        return;
+      }
+
       setTouched((prev) => ({
         ...prev,
-        [name]: true,
+        [fieldName]: true,
       }));
 
       // Validate on blur
-      const error = validateField(name, values[name]);
-      setErrors((prev) => ({
-        ...prev,
-        [name]: error || undefined,
-      }));
+      const error = validateField(fieldName, values[fieldName]);
+      if (error) {
+        setErrors((prev) => ({
+          ...prev,
+          [fieldName]: error,
+        }));
+      } else {
+        // Remove error if validation passes
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldName];
+          return newErrors;
+        });
+      }
     },
     [values, validateField]
   );
 
   /**
-   * Set a single field value
+   * Set a single field value and validate if touched
    */
   const setValue = useCallback(
     (fieldName, value) => {
@@ -171,10 +223,19 @@ export default function useSmartForm({
       // Validate if field has been touched
       if (touched[fieldName]) {
         const error = validateField(fieldName, value);
-        setErrors((prev) => ({
-          ...prev,
-          [fieldName]: error || undefined,
-        }));
+        if (error) {
+          setErrors((prev) => ({
+            ...prev,
+            [fieldName]: error,
+          }));
+        } else {
+          // Remove error if validation passes
+          setErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[fieldName];
+            return newErrors;
+          });
+        }
       }
     },
     [touched, validateField]
@@ -184,20 +245,28 @@ export default function useSmartForm({
    * Set a field error manually
    */
   const setError = useCallback((fieldName, error) => {
-    setErrors((prev) => ({
-      ...prev,
-      [fieldName]: error,
-    }));
+    if (error) {
+      setErrors((prev) => ({
+        ...prev,
+        [fieldName]: error,
+      }));
+    } else {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    }
   }, []);
 
   /**
    * Reset form to initial state
    */
   const resetForm = useCallback(() => {
-    setValues(initialValues);
+    setValues(cleanInitialValues);
     setErrors({});
     setTouched({});
-  }, [initialValues]);
+  }, [cleanInitialValues]);
 
   /**
    * Check if form is valid (no errors)
@@ -207,11 +276,13 @@ export default function useSmartForm({
   }, [errors]);
 
   /**
-   * Check if any fields have been touched
+   * Check if form is dirty by comparing values with initialValues
    */
   const isDirty = useMemo(() => {
-    return Object.keys(touched).length > 0;
-  }, [touched]);
+    return Object.keys(cleanInitialValues).some(
+      (key) => values[key] !== cleanInitialValues[key]
+    );
+  }, [values, cleanInitialValues]);
 
   return {
     // State

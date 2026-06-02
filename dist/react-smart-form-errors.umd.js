@@ -644,29 +644,30 @@
     // Number validation
     number: {
       not_a_number: function not_a_number(field) {
-        return field + " must be a number";
+        return field + " must be a valid number";
       },
       min: function min(field, value) {
         return field + " must be at least " + value;
       },
       max: function max(field, value) {
-        return field + " must be less than or equal to " + value;
+        return field + " must be no more than " + value;
       }
     },
-    // Confirm password validation
-    confirmPassword: function confirmPassword(field) {
-      return field + " must match the password field";
-    },
-    // Length validations
+    // Min length validation
     minLength: function minLength(field, value) {
       return field + " must be at least " + value + " characters";
     },
+    // Max length validation
     maxLength: function maxLength(field, value) {
-      return field + " must be less than " + value + " characters";
+      return field + " must be no more than " + value + " characters";
     },
     // Pattern validation
     pattern: function pattern(field) {
-      return field + " format is invalid";
+      return field + " does not match the required pattern";
+    },
+    // Confirm password validation
+    confirmPassword: function confirmPassword(field) {
+      return field + " does not match";
     },
     // Generic invalid message
     invalid: function invalid(field) {
@@ -676,36 +677,61 @@
 
   /**
    * Utility function to get error message for a validation error
-   * @param {Object} error - The validation error object from a validator
+   * @param {string|Object} error - The validation error (string or object from a validator)
    * @param {string} fieldName - The name of the field
-   * @param {Object} messages - The messages object
+   * @param {Object} messages - The messages object with custom messages
    * @returns {string} The error message
    */
   function getErrorMessage(error, fieldName, messages) {
-    if (!error || !messages) return '';
+    if (messages === void 0) {
+      messages = {};
+    }
+    if (!error) return '';
+
+    // Generate field label from field name
     var label = fieldName.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\b\w/g, function (c) {
       return c.toUpperCase();
     }).trim();
+
+    // If error is a string, return it directly
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    // If error is not an object, return generic message
+    if (typeof error !== 'object' || error === null) {
+      return label + " is invalid";
+    }
+
+    // Error is an object
     var errorType = error.type;
     var messageConfig = messages[errorType];
 
-    // If message is a function, call it with label and optional value
+    // If no message config for this error type, return generic message
+    if (!messageConfig) {
+      return label + " is invalid";
+    }
+
+    // If message is a function, call it with label and value/reason
     if (typeof messageConfig === 'function') {
       return messageConfig(label, error.value || error.reason);
     }
 
-    // If message is an object (nested error types), use the reason key
-    if (typeof messageConfig === 'object' && error.reason) {
-      var reasonMessage = messageConfig[error.reason];
-      if (typeof reasonMessage === 'function') {
-        return reasonMessage(label, error.value);
+    // If message is an object (nested error types like password.minLength)
+    if (typeof messageConfig === 'object' && messageConfig !== null) {
+      var reason = error.reason || error.rule;
+      if (reason) {
+        var reasonMessage = messageConfig[reason];
+        if (typeof reasonMessage === 'function') {
+          return reasonMessage(label, error.value);
+        }
+        if (typeof reasonMessage === 'string') {
+          return reasonMessage;
+        }
       }
     }
 
-    // Return generic invalid message
-    if (typeof messages.invalid === 'function') {
-      return messages.invalid(label);
-    }
+    // Fallback to generic message
     return label + " is invalid";
   }
 
@@ -727,7 +753,11 @@
       rules = _ref$rules === void 0 ? {} : _ref$rules,
       _ref$messages = _ref.messages,
       messages = _ref$messages === void 0 ? defaultMessages : _ref$messages;
-    var _useState = react.useState(initialValues),
+    // Ensure initialValues is a plain object
+    var cleanInitialValues = react.useMemo(function () {
+      return typeof initialValues === 'object' && initialValues !== null ? _extends({}, initialValues) : {};
+    }, [initialValues]);
+    var _useState = react.useState(cleanInitialValues),
       values = _useState[0],
       setValues = _useState[1];
     var _useState2 = react.useState({}),
@@ -779,7 +809,7 @@
       }
 
       // Object rule: custom configuration
-      if (typeof rule === 'object') {
+      if (typeof rule === 'object' && rule !== null) {
         var ruleName = rule.rule,
           options = _objectWithoutPropertiesLoose(rule, _excluded);
         var _validator = validators[ruleName];
@@ -797,16 +827,19 @@
     };
 
     /**
-     * Validates all fields
+     * Validates all fields and sets touched to true for all fields with rules
      */
     var validateForm = react.useCallback(function () {
       var newErrors = {};
+      var newTouched = {};
       Object.keys(rules).forEach(function (fieldName) {
+        newTouched[fieldName] = true;
         var error = validateField(fieldName, values[fieldName]);
         if (error) {
           newErrors[fieldName] = error;
         }
       });
+      setTouched(newTouched);
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     }, [rules, values, validateField]);
@@ -816,55 +849,95 @@
      */
     var getFieldError = react.useCallback(function (fieldName) {
       var error = errors[fieldName];
-      if (!error) return null;
+      if (!error) return '';
       return getErrorMessage(error, fieldName, mergedMessages);
     }, [errors, mergedMessages]);
 
     /**
-     * Handle input change
+     * Handle input change - supports both React events and manual calls
      */
-    var handleChange = react.useCallback(function (e) {
-      var _e$target = e.target,
-        name = _e$target.name,
-        value = _e$target.value,
-        type = _e$target.type,
-        checked = _e$target.checked;
-      var newValue = type === 'checkbox' ? checked : value;
+    var handleChange = react.useCallback(function (nameOrEvent, manualValue) {
+      var fieldName;
+      var newValue;
+
+      // Support both React events and manual usage: handleChange("fieldName", value)
+      if (typeof nameOrEvent === 'string') {
+        fieldName = nameOrEvent;
+        newValue = manualValue;
+      } else if (nameOrEvent && typeof nameOrEvent === 'object') {
+        // React event
+        var target = nameOrEvent.target;
+        fieldName = target.name;
+        var type = target.type,
+          checked = target.checked,
+          value = target.value;
+        newValue = type === 'checkbox' ? checked : value;
+      } else {
+        return;
+      }
       setValues(function (prev) {
         var _extends2;
-        return _extends({}, prev, (_extends2 = {}, _extends2[name] = newValue, _extends2));
+        return _extends({}, prev, (_extends2 = {}, _extends2[fieldName] = newValue, _extends2));
       });
 
       // Validate on change if field has been touched
-      if (touched[name]) {
-        var error = validateField(name, newValue);
-        setErrors(function (prev) {
-          var _extends3;
-          return _extends({}, prev, (_extends3 = {}, _extends3[name] = error || undefined, _extends3));
-        });
+      if (touched[fieldName]) {
+        var error = validateField(fieldName, newValue);
+        if (error) {
+          setErrors(function (prev) {
+            var _extends3;
+            return _extends({}, prev, (_extends3 = {}, _extends3[fieldName] = error, _extends3));
+          });
+        } else {
+          // Remove error if validation passes
+          setErrors(function (prev) {
+            var newErrors = _extends({}, prev);
+            delete newErrors[fieldName];
+            return newErrors;
+          });
+        }
       }
     }, [touched, validateField]);
 
     /**
-     * Handle blur event
+     * Handle blur event - supports both React events and manual calls
      */
-    var handleBlur = react.useCallback(function (e) {
-      var name = e.target.name;
+    var handleBlur = react.useCallback(function (nameOrEvent) {
+      var fieldName;
+
+      // Support both React events and manual usage: handleBlur("fieldName")
+      if (typeof nameOrEvent === 'string') {
+        fieldName = nameOrEvent;
+      } else if (nameOrEvent && typeof nameOrEvent === 'object') {
+        // React event
+        fieldName = nameOrEvent.target.name;
+      } else {
+        return;
+      }
       setTouched(function (prev) {
         var _extends4;
-        return _extends({}, prev, (_extends4 = {}, _extends4[name] = true, _extends4));
+        return _extends({}, prev, (_extends4 = {}, _extends4[fieldName] = true, _extends4));
       });
 
       // Validate on blur
-      var error = validateField(name, values[name]);
-      setErrors(function (prev) {
-        var _extends5;
-        return _extends({}, prev, (_extends5 = {}, _extends5[name] = error || undefined, _extends5));
-      });
+      var error = validateField(fieldName, values[fieldName]);
+      if (error) {
+        setErrors(function (prev) {
+          var _extends5;
+          return _extends({}, prev, (_extends5 = {}, _extends5[fieldName] = error, _extends5));
+        });
+      } else {
+        // Remove error if validation passes
+        setErrors(function (prev) {
+          var newErrors = _extends({}, prev);
+          delete newErrors[fieldName];
+          return newErrors;
+        });
+      }
     }, [values, validateField]);
 
     /**
-     * Set a single field value
+     * Set a single field value and validate if touched
      */
     var setValue = react.useCallback(function (fieldName, value) {
       setValues(function (prev) {
@@ -875,10 +948,19 @@
       // Validate if field has been touched
       if (touched[fieldName]) {
         var error = validateField(fieldName, value);
-        setErrors(function (prev) {
-          var _extends7;
-          return _extends({}, prev, (_extends7 = {}, _extends7[fieldName] = error || undefined, _extends7));
-        });
+        if (error) {
+          setErrors(function (prev) {
+            var _extends7;
+            return _extends({}, prev, (_extends7 = {}, _extends7[fieldName] = error, _extends7));
+          });
+        } else {
+          // Remove error if validation passes
+          setErrors(function (prev) {
+            var newErrors = _extends({}, prev);
+            delete newErrors[fieldName];
+            return newErrors;
+          });
+        }
       }
     }, [touched, validateField]);
 
@@ -886,20 +968,28 @@
      * Set a field error manually
      */
     var setError = react.useCallback(function (fieldName, error) {
-      setErrors(function (prev) {
-        var _extends8;
-        return _extends({}, prev, (_extends8 = {}, _extends8[fieldName] = error, _extends8));
-      });
+      if (error) {
+        setErrors(function (prev) {
+          var _extends8;
+          return _extends({}, prev, (_extends8 = {}, _extends8[fieldName] = error, _extends8));
+        });
+      } else {
+        setErrors(function (prev) {
+          var newErrors = _extends({}, prev);
+          delete newErrors[fieldName];
+          return newErrors;
+        });
+      }
     }, []);
 
     /**
      * Reset form to initial state
      */
     var resetForm = react.useCallback(function () {
-      setValues(initialValues);
+      setValues(cleanInitialValues);
       setErrors({});
       setTouched({});
-    }, [initialValues]);
+    }, [cleanInitialValues]);
 
     /**
      * Check if form is valid (no errors)
@@ -909,11 +999,13 @@
     }, [errors]);
 
     /**
-     * Check if any fields have been touched
+     * Check if form is dirty by comparing values with initialValues
      */
     var isDirty = react.useMemo(function () {
-      return Object.keys(touched).length > 0;
-    }, [touched]);
+      return Object.keys(cleanInitialValues).some(function (key) {
+        return values[key] !== cleanInitialValues[key];
+      });
+    }, [values, cleanInitialValues]);
     return {
       // State
       values: values,

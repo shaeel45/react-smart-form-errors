@@ -48,20 +48,22 @@ export default {
 
   // Number validation
   number: {
-    not_a_number: (field) => `${field} must be a number`,
+    not_a_number: (field) => `${field} must be a valid number`,
     min: (field, value) => `${field} must be at least ${value}`,
-    max: (field, value) => `${field} must be less than or equal to ${value}`,
+    max: (field, value) => `${field} must be no more than ${value}`,
   },
 
-  // Confirm password validation
-  confirmPassword: (field) => `${field} must match the password field`,
-
-  // Length validations
+  // Min length validation
   minLength: (field, value) => `${field} must be at least ${value} characters`,
-  maxLength: (field, value) => `${field} must be less than ${value} characters`,
+
+  // Max length validation
+  maxLength: (field, value) => `${field} must be no more than ${value} characters`,
 
   // Pattern validation
-  pattern: (field) => `${field} format is invalid`,
+  pattern: (field) => `${field} does not match the required pattern`,
+
+  // Confirm password validation
+  confirmPassword: (field) => `${field} does not match`,
 
   // Generic invalid message
   invalid: (field) => `${field} is invalid`,

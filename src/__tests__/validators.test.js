@@ -15,7 +15,7 @@ import {
   validateMinLength,
   validateMaxLength,
   validatePattern,
-} from '../src/validators';
+} from '../index';
 
 describe('Validators', () => {
   describe('Required Validator', () => {

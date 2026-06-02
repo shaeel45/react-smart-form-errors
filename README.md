@@ -24,80 +24,221 @@ npm install react-smart-form-errors
 ```jsx
 import { useSmartForm } from 'react-smart-form-errors';
 
-function MyForm() {
-  const { values, errors, handleChange, handleBlur, validateForm } = useSmartForm({
+function RegistrationForm() {
+  const form = useSmartForm({
     initialValues: {
       email: '',
       password: '',
       fullName: '',
+      phone: '',
+      dob: ''
     },
     rules: {
       email: ['required', 'email'],
       password: ['required', { rule: 'password', minLength: 8 }],
-      fullName: ['required', 'fullName'],
-    },
+      fullName: ['required', 'fullname'],
+      phone: ['required', 'phone'],
+      dob: ['required', { rule: 'dob', minAge: 18 }]
+    }
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log('Form is valid!', values);
+    if (form.validateForm()) {
+      console.log('Form is valid!', form.values);
+      // Submit form
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <input
-        name="email"
-        value={values.email}
-        onChange={handleChange}
-        onBlur={handleBlur}
-      />
-      {errors.email && <span>{errors.email.type}</span>}
+      <div>
+        <input
+          name="email"
+          type="email"
+          placeholder="Email"
+          value={form.values.email}
+          onChange={form.handleChange}
+          onBlur={form.handleBlur}
+        />
+        {form.getFieldError('email') && (
+          <span className="error">{form.getFieldError('email')}</span>
+        )}
+      </div>
 
-      <input
-        name="password"
-        type="password"
-        value={values.password}
-        onChange={handleChange}
-        onBlur={handleBlur}
-      />
+      <div>
+        <input
+          name="password"
+          type="password"
+          placeholder="Password"
+          value={form.values.password}
+          onChange={form.handleChange}
+          onBlur={form.handleBlur}
+        />
+        {form.getFieldError('password') && (
+          <span className="error">{form.getFieldError('password')}</span>
+        )}
+      </div>
 
-      <input
-        name="fullName"
-        value={values.fullName}
-        onChange={handleChange}
-        onBlur={handleBlur}
-      />
+      <div>
+        <input
+          name="fullName"
+          placeholder="Full Name"
+          value={form.values.fullName}
+          onChange={form.handleChange}
+          onBlur={form.handleBlur}
+        />
+        {form.getFieldError('fullName') && (
+          <span className="error">{form.getFieldError('fullName')}</span>
+        )}
+      </div>
 
-      <button type="submit">Submit</button>
+      <div>
+        <input
+          name="phone"
+          type="tel"
+          placeholder="Phone"
+          value={form.values.phone}
+          onChange={form.handleChange}
+          onBlur={form.handleBlur}
+        />
+        {form.getFieldError('phone') && (
+          <span className="error">{form.getFieldError('phone')}</span>
+        )}
+      </div>
+
+      <div>
+        <input
+          name="dob"
+          type="date"
+          value={form.values.dob}
+          onChange={form.handleChange}
+          onBlur={form.handleBlur}
+        />
+        {form.getFieldError('dob') && (
+          <span className="error">{form.getFieldError('dob')}</span>
+        )}
+      </div>
+
+      <button type="submit" disabled={!form.isValid}>
+        Register
+      </button>
     </form>
   );
 }
 ```
 
-## Available Validators
+## Hook API
 
-### Basic Validators
+### `useSmartForm(config)`
 
-#### `required`
-Validates that a field has a value.
+#### Configuration
 
 ```javascript
-rules: {
-  email: 'required',
-  // or in array
-  email: ['required', 'email'],
+const form = useSmartForm({
+  // Initial form values
+  initialValues: {
+    email: '',
+    password: '',
+    fullName: '',
+    phone: '',
+    dob: ''
+  },
+  
+  // Validation rules - string, array, object, or function
+  rules: {
+    email: ['required', 'email'],
+    password: ['required', { rule: 'password', minLength: 8 }],
+    fullName: ['required', 'fullname'],
+    phone: ['required', 'phone'],
+    dob: ['required', { rule: 'dob', minAge: 18 }]
+  },
+  
+  // Custom error messages (optional)
+  messages: {
+    required: (field) => `${field} is required`,
+    email: (field) => `${field} is not a valid email`,
+    // ... override other messages
+  }
+});
+```
+
+#### Return Object
+
+```javascript
+{
+  // Form values
+  values,           // Current form values
+  errors,           // Object with field errors
+  touched,          // Fields that have been interacted with
+  
+  // Validation methods
+  validateField,    // Validate a single field
+  validateForm,     // Validate all fields
+  getFieldError,    // Get error message for a field (returns string)
+  
+  // Value setters
+  setValue,         // Set single field value
+  setValues,        // Set multiple field values
+  setError,         // Set error manually
+  setTouched,       // Set touched state
+  resetForm,        // Reset to initial state
+  
+  // Event handlers
+  handleChange,     // Handle input changes
+  handleBlur,       // Handle field blur
+  
+  // Computed state
+  isValid,          // True if no errors
+  isDirty           // True if values differ from initialValues
 }
 ```
 
-#### `email`
-Validates email format.
+### Event Handlers
+
+#### `handleChange`
+Supports both React events and manual usage:
 
 ```javascript
-rules: {
-  email: 'email',
-}
+// React event handler
+<input onChange={form.handleChange} />
+
+// Manual usage
+form.handleChange('email', 'test@example.com');
+```
+
+#### `handleBlur`
+Supports both React events and manual usage:
+
+```javascript
+// React event handler
+<input onBlur={form.handleBlur} />
+
+// Manual usage
+form.handleBlur('email');
+```
+
+## Import Validators
+
+You can import and use validators directly:
+
+```javascript
+import {
+  useSmartForm,
+  validateEmail,
+  validatePhone,
+  validatePassword,
+  validateDOB,
+  validateFullName,
+  validateRequired
+} from 'react-smart-form-errors';
+
+// Use in custom validation
+const customEmail = validateEmail('test@example.com');
+const customPhone = validatePhone('03001234567');
+```
+
+
 ```
 
 #### `phone`
