@@ -1,13 +1,15 @@
 {
   "name": "react-smart-form-errors",
-  "version": "1.0.3",
-  "description": "",
+  "version": "2.0.0",
+  "description": "A lightweight, production-ready form validation library for React with 15+ built-in validators and zero dependencies",
   "main": "dist/react-smart-form-errors.cjs",
   "module": "dist/react-smart-form-errors.esm.js",
+  "types": "index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/react-smart-form-errors.esm.js",
-      "require": "./dist/react-smart-form-errors.cjs"
+      "require": "./dist/react-smart-form-errors.cjs",
+      "types": "./index.d.ts"
     }
   },
   "peerDependencies": {
@@ -16,19 +18,35 @@
   "scripts": {
     "build": "microbundle -i src/index.js -o dist --no-compress",
     "prepare": "npm run build",
-    "test": "echo \"No tests configured\" && exit 0"
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
   },
-  "keywords": [],
+  "keywords": [
+    "react",
+    "form",
+    "validation",
+    "validators",
+    "error-handling",
+    "form-validation",
+    "lightweight"
+  ],
   "author": "",
   "license": "MIT",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "index.d.ts"
   ],
   "dependencies": {
     "react": ">=16"
   },
   "devDependencies": {
-    "microbundle": "^0.15.1"
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
+    "@vitest/coverage-v8": "^1.0.4",
+    "jsdom": "^23.0.1",
+    "microbundle": "^0.15.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.4"
   }
 }

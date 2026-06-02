@@ -1,13 +1,68 @@
 export default {
-  required: field => `${field} is required`,
-  invalid: field => `${field} is invalid`,
-  email: field => `Please enter a valid ${field.toLowerCase()}`,
-  phone: field => `Please enter a valid ${field.toLowerCase()}`,
-  password: (field, value) =>
-    `${field} must be at least ${value || 8} characters`,
-  dob: field => `Please enter a valid date of birth for ${field}`,
-  fullname: field => `Please enter your full name for ${field}`,
+  // Required validation
+  required: (field) => `${field} is required`,
+
+  // Email validation
+  email: (field) => `${field} must be a valid email address`,
+
+  // Phone validation
+  phone: (field) => `${field} must be a valid phone number`,
+
+  // Password validation
+  password: {
+    minLength: (field, value) => `${field} must be at least ${value} characters`,
+    uppercase: (field) => `${field} must contain at least one uppercase letter`,
+    lowercase: (field) => `${field} must contain at least one lowercase letter`,
+    number: (field) => `${field} must contain at least one number`,
+    special: (field) => `${field} must contain at least one special character (!@#$%^&*)`,
+  },
+
+  // Date of birth validation
+  dob: {
+    invalid_format: (field) => `${field} must be in YYYY-MM-DD format`,
+    invalid_type: (field) => `${field} must be a valid date`,
+    invalid_date: (field) => `${field} is not a valid date`,
+    future_date: (field) => `${field} cannot be a future date`,
+    min_age: (field, value) => `${field} must be at least ${value} years old`,
+  },
+
+  // Full name validation
+  fullname: (field) => `${field} must contain at least first and last name`,
+
+  // First name validation
+  firstName: (field) => `${field} must be a valid first name`,
+
+  // Last name validation
+  lastName: (field) => `${field} must be a valid last name`,
+
+  // Username validation
+  username: {
+    minLength: (field, value) => `${field} must be at least ${value} characters`,
+    maxLength: (field, value) => `${field} must be less than ${value} characters`,
+    invalid_chars: (field) => `${field} can only contain letters, numbers, and underscores`,
+    invalid_start: (field) => `${field} must start with a letter`,
+  },
+
+  // URL validation
+  url: (field) => `${field} must be a valid HTTP or HTTPS URL`,
+
+  // Number validation
+  number: {
+    not_a_number: (field) => `${field} must be a number`,
+    min: (field, value) => `${field} must be at least ${value}`,
+    max: (field, value) => `${field} must be less than or equal to ${value}`,
+  },
+
+  // Confirm password validation
+  confirmPassword: (field) => `${field} must match the password field`,
+
+  // Length validations
   minLength: (field, value) => `${field} must be at least ${value} characters`,
   maxLength: (field, value) => `${field} must be less than ${value} characters`,
-  pattern: field => `${field} format is invalid`,
+
+  // Pattern validation
+  pattern: (field) => `${field} format is invalid`,
+
+  // Generic invalid message
+  invalid: (field) => `${field} is invalid`,
 };
