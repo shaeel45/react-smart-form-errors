@@ -1,6 +1,6 @@
 {
   "name": "react-smart-form-errors",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A lightweight, production-ready form validation library for React with 15+ built-in validators and zero dependencies",
   "main": "dist/react-smart-form-errors.cjs",
   "module": "dist/react-smart-form-errors.esm.js",
@@ -50,8 +50,8 @@
     "vitest": "^1.0.4"
   },
   "repository": {
-  "type": "git",
-  "url": "git+https://github.com/shaeel45/react-smart-form-errors.git"
+    "type": "git",
+    "url": "git+https://github.com/shaeel45/react-smart-form-errors.git"
   },
   "bugs": {
     "url": "https://github.com/shaeel45/react-smart-form-errors/issues"
