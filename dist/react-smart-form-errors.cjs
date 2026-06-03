@@ -546,6 +546,7 @@ var validators = {
   password: password,
   dob: dob,
   fullname: fullname,
+  fullName: fullname,
   required: required,
   firstName: firstName,
   lastName: lastName,
@@ -770,29 +771,8 @@ function useSmartForm(_temp) {
   }, [messages]);
 
   /**
-   * Validates a single field against its rules
-   */
-  var validateField = react.useCallback(function (fieldName, fieldValue) {
-    var fieldRules = rules[fieldName];
-    if (!fieldRules) return null;
-
-    // Handle array of rules
-    if (Array.isArray(fieldRules)) {
-      for (var _iterator = _createForOfIteratorHelperLoose(fieldRules), _step; !(_step = _iterator()).done;) {
-        var rule = _step.value;
-        var error = executeRule(rule, fieldValue);
-        if (error) return error;
-      }
-      return null;
-    }
-
-    // Handle single rule
-    return executeRule(fieldRules, fieldValue);
-  }, [rules]);
-
-  /**
-   * Executes a single validation rule
-   */
+  * Executes a single validation rule
+  */
   var executeRule = function executeRule(rule, value) {
     if (!rule) return null;
 
@@ -822,6 +802,27 @@ function useSmartForm(_temp) {
     }
     return null;
   };
+
+  /**
+   * Validates a single field against its rules
+   */
+  var validateField = react.useCallback(function (fieldName, fieldValue) {
+    var fieldRules = rules[fieldName];
+    if (!fieldRules) return null;
+
+    // Handle array of rules
+    if (Array.isArray(fieldRules)) {
+      for (var _iterator = _createForOfIteratorHelperLoose(fieldRules), _step; !(_step = _iterator()).done;) {
+        var rule = _step.value;
+        var error = executeRule(rule, fieldValue);
+        if (error) return error;
+      }
+      return null;
+    }
+
+    // Handle single rule
+    return executeRule(fieldRules, fieldValue);
+  }, [rules]);
 
   /**
    * Validates all fields and sets touched to true for all fields with rules
