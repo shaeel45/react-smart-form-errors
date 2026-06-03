@@ -32,31 +32,7 @@ export default function useSmartForm({
     return { ...defaultMessages, ...messages };
   }, [messages]);
 
-  /**
-   * Validates a single field against its rules
-   */
-  const validateField = useCallback(
-    (fieldName, fieldValue) => {
-      const fieldRules = rules[fieldName];
-
-      if (!fieldRules) return null;
-
-      // Handle array of rules
-      if (Array.isArray(fieldRules)) {
-        for (const rule of fieldRules) {
-          const error = executeRule(rule, fieldValue);
-          if (error) return error;
-        }
-        return null;
-      }
-
-      // Handle single rule
-      return executeRule(fieldRules, fieldValue);
-    },
-    [rules]
-  );
-
-  /**
+   /**
    * Executes a single validation rule
    */
   const executeRule = (rule, value) => {
@@ -88,6 +64,31 @@ export default function useSmartForm({
 
     return null;
   };
+
+  /**
+   * Validates a single field against its rules
+   */
+  const validateField = useCallback(
+    (fieldName, fieldValue) => {
+      const fieldRules = rules[fieldName];
+
+      if (!fieldRules) return null;
+
+      // Handle array of rules
+      if (Array.isArray(fieldRules)) {
+        for (const rule of fieldRules) {
+          const error = executeRule(rule, fieldValue);
+          if (error) return error;
+        }
+        return null;
+      }
+
+      // Handle single rule
+      return executeRule(fieldRules, fieldValue);
+    },
+    [rules]
+  );
+
 
   /**
    * Validates all fields and sets touched to true for all fields with rules

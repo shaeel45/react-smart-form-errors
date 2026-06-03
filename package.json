@@ -4,7 +4,7 @@
   "description": "A lightweight, production-ready form validation library for React with 15+ built-in validators and zero dependencies",
   "main": "dist/react-smart-form-errors.cjs",
   "module": "dist/react-smart-form-errors.esm.js",
-  "types": "index.d.ts",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/react-smart-form-errors.esm.js",
@@ -30,12 +30,15 @@
     "form-validation",
     "lightweight"
   ],
-  "author": "",
+  "author": "Shaeel Khan <beingshaeel@gmail.com>",
   "license": "MIT",
   "type": "module",
   "files": [
     "dist",
-    "index.d.ts"
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "devDependencies": {
     "@testing-library/react": "^14.1.2",
@@ -45,5 +48,13 @@
     "microbundle": "^0.15.1",
     "typescript": "^5.3.3",
     "vitest": "^1.0.4"
-  }
+  },
+  "repository": {
+  "type": "git",
+  "url": "git+https://github.com/shaeel45/react-smart-form-errors.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shaeel45/react-smart-form-errors/issues"
+  },
+  "homepage": "https://github.com/shaeel45/react-smart-form-errors#readme"
 }

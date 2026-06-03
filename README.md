@@ -818,7 +818,7 @@ function MyForm() {
 
 ## Documentation
 
-See [docs](./docs) for complete API reference and examples.
+See [docs](https://react-smart-form-errors-docs-docs-s.vercel.app/) for complete API reference and examples.
 
 ## License
 

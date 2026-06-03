@@ -20,6 +20,7 @@ export default {
   password,
   dob,
   fullname,
+  fullName: fullname,
   required,
   firstName,
   lastName,
