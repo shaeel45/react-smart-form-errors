@@ -1,5 +1,5 @@
 {
-  "name": "react-smart-form-errors",
+  "name": "@shaeel45/react-smart-form-errors",
   "version": "2.0.3",
   "description": "A lightweight, production-ready form validation library for React with 15+ built-in validators and zero dependencies",
   "main": "dist/react-smart-form-errors.cjs",
